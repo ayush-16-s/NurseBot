@@ -1,0 +1,1167 @@
+// .bot-list-container {
+//   background: linear-gradient(135deg, #e8f0f7 0%, #f8fbff 100%);
+//   min-height: 100vh;
+
+//   .card {
+//     background: rgba(255, 255, 255, 0.9);
+//     border: none;
+//     border-radius: 1rem;
+//     transition: all 0.3s ease;
+//     backdrop-filter: blur(10px);
+
+//     &:hover {
+//       transform: translateY(-3px);
+//       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+//     }
+
+//     h4,
+//     h5 {
+//       color: #0984e3;
+//     }
+
+//     .btn-primary {
+//       background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+//       border: none;
+//       border-radius: 0.5rem;
+//       font-weight: 600;
+//       transition: all 0.3s ease;
+
+//       &:hover {
+//         background: linear-gradient(135deg, #0984e3 0%, #74b9ff 100%);
+//         transform: translateY(-2px);
+//       }
+//     }
+
+//     .form-control {
+//       border-radius: 0.5rem;
+//       border: 1px solid #ced4da;
+//       transition: all 0.3s ease;
+
+//       &:focus {
+//         border-color: #74b9ff;
+//         box-shadow: 0 0 0 0.25rem rgba(116, 185, 255, 0.25);
+//       }
+//     }
+//   }
+
+
+//   table {
+//     th {
+//       font-weight: 600;
+//       color: #495057;
+//     }
+
+//     td {
+//       color: #333;
+//     }
+//   }
+
+//   .table-responsive{
+//     height: 15rem !important;
+//   }
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// .bot-list-container {
+//   min-height: 100vh;
+//   padding: 1.5rem;
+//   background: linear-gradient(135deg, #1f1147, #3a1c71, #6a4bc4);
+//   position: relative;
+//   overflow: hidden;
+//   font-family: "Poppins", sans-serif;
+
+//   /* Soft animated AI glow */
+//   &::before {
+//     content: "";
+//     position: absolute;
+//     inset: 0;
+//     background:
+//       radial-gradient(circle at 20% 20%, rgba(185,147,255,0.35), transparent 50%),
+//       radial-gradient(circle at 80% 80%, rgba(142,197,252,0.35), transparent 50%);
+//     animation: bgFloat 12s infinite alternate;
+//     z-index: 0;
+//   }
+
+//   /* Keep content above animation */
+//   > * {
+//     position: relative;
+//     z-index: 1;
+//   }
+
+//   /* CARDS */
+//   .card {
+//     background: linear-gradient(135deg, #ffffff, #f3ecff);
+//     border: none;
+//     border-radius: 20px;
+//     padding: 1rem;
+//     transition: all 0.35s ease;
+//     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+
+//     &:hover {
+//       transform: translateY(-6px) scale(1.01);
+//       box-shadow: 0 25px 55px rgba(142, 45, 226, 0.35);
+//     }
+
+//     h4,
+//     h5 {
+//       color: #4a00e0;
+//       font-weight: 700;
+//     }
+
+//     p {
+//       color: #444;
+//     }
+
+//     /* PRIMARY BUTTON */
+//     .btn-primary {
+//       background: linear-gradient(135deg, #8e2de2, #4a00e0);
+//       border: none;
+//       border-radius: 12px;
+//       font-weight: 600;
+//       padding: 0.55rem 1.1rem;
+//       transition: all 0.3s ease;
+
+//       &:hover {
+//         transform: translateY(-2px);
+//         box-shadow: 0 10px 25px rgba(142, 45, 226, 0.45);
+//         background: linear-gradient(135deg, #4a00e0, #8e2de2);
+//       }
+//     }
+
+//     /* INPUTS */
+//     .form-control {
+//       border-radius: 12px;
+//       border: 1px solid #c7b8f5;
+//       background: #ffffff;
+//       color: #1a1a1a;
+//       transition: all 0.25s ease;
+
+//       &:focus {
+//         border-color: #8e2de2;
+//         box-shadow: 0 0 0 0.2rem rgba(142, 45, 226, 0.25);
+//       }
+//     }
+//   }
+
+//   /* TABLE */
+//   table {
+//     background: #ffffff;
+//     border-radius: 16px;
+//     overflow: hidden;
+
+//     th {
+//       background: #f3ecff;
+//       font-weight: 600;
+//       color: #4a148c;
+//       border-bottom: none;
+//     }
+
+//     td {
+//       color: #333;
+//       vertical-align: middle;
+//     }
+
+//     tr:hover td {
+//       background: #f8f4ff;
+//     }
+//   }
+
+//   .table-responsive {
+//     height: 15rem !important;
+//     border-radius: 16px;
+//     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+//   }
+// }
+
+// /* BACKGROUND FLOAT ANIMATION */
+// @keyframes bgFloat {
+//   0% {
+//     transform: translateY(0) scale(1);
+//   }
+//   100% {
+//     transform: translateY(-40px) scale(1.15);
+//   }
+// }
+
+
+
+
+
+
+
+
+
+
+
+// .bot-list-container {
+//   min-height: 100vh;
+//   padding: 1.5rem;
+//   background: linear-gradient(135deg, #eef3f8 0%, #f9fbfd 100%); // Login page light background
+//   position: relative;
+//   overflow: hidden;
+//   font-family: "Poppins", sans-serif;
+
+//   /* Soft animated AI glow (blue version) */
+//   &::before {
+//     content: "";
+//     position: absolute;
+//     inset: 0;
+//     background:
+//       radial-gradient(circle at 20% 20%, rgba(116,185,255,0.25), transparent 50%),
+//       radial-gradient(circle at 80% 80%, rgba(74,137,255,0.25), transparent 50%);
+//     animation: bgFloat 12s infinite alternate;
+//     z-index: 0;
+//   }
+
+//   /* Keep content above animation */
+//   > * {
+//     position: relative;
+//     z-index: 1;
+//   }
+
+//   /* CARDS */
+//   .card {
+//     background: #fff; // white background
+//     border: none;
+//     border-radius: 20px;
+//     padding: 1rem;
+//     transition: all 0.35s ease;
+//     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+
+//     &:hover {
+//       transform: translateY(-6px) scale(1.01);
+//       box-shadow: 0 25px 55px rgba(116,185,255,0.25); // soft blue shadow
+//     }
+
+//     h4,
+//     h5 {
+//       color: #0984e3; // blue header
+//       font-weight: 700;
+//     }
+
+//     p {
+//       color: #333;
+//     }
+
+//     /* PRIMARY BUTTON */
+//     .btn-primary {
+//       background: linear-gradient(135deg, #74b9ff, #0984e3); // Login button gradient
+//       border: none;
+//       border-radius: 12px;
+//       font-weight: 600;
+//       padding: 0.55rem 1.1rem;
+//       transition: all 0.3s ease;
+
+//       &:hover {
+//         transform: translateY(-2px);
+//         box-shadow: 0 10px 25px rgba(116,185,255,0.35);
+//         background: linear-gradient(135deg, #0984e3, #74b9ff);
+//       }
+//     }
+
+//     /* INPUTS */
+//     .form-control {
+//       border-radius: 12px;
+//       border: 1px solid #a3c4ff; // soft blue border
+//       background: #fff;
+//       color: #1a1a1a;
+//       transition: all 0.25s ease;
+
+//       &:focus {
+//         border-color: #74b9ff;
+//         box-shadow: 0 0 0 0.2rem rgba(116,185,255,0.25);
+//       }
+//     }
+//   }
+
+//   /* TABLE */
+//   table {
+//     background: #fff;
+//     border-radius: 16px;
+//     overflow: hidden;
+
+//     th {
+//       background: #e6f0ff; // soft light blue header
+//       font-weight: 600;
+//       color: #0984e3;
+//       border-bottom: none;
+//     }
+
+//     td {
+//       color: #333;
+//       vertical-align: middle;
+//     }
+
+//     tr:hover td {
+//       background: #f1f5ff; // light hover
+//     }
+//   }
+
+//   .table-responsive {
+//     height: 15rem !important;
+//     border-radius: 16px;
+//     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+//   }
+// }
+
+// /* BACKGROUND FLOAT ANIMATION */
+// @keyframes bgFloat {
+//   0% {
+//     transform: translateY(0) scale(1);
+//   }
+//   100% {
+//     transform: translateY(-40px) scale(1.15);
+//   }
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// .bot-list-container {
+//   min-height: 100vh;
+//   padding: 2rem;
+//   background: linear-gradient(135deg, #e0f7fa 0%, #f1f8e9 100%); // soft teal-green background
+//   position: relative;
+//   overflow: hidden;
+//   font-family: "Poppins", sans-serif;
+
+//   /* Floating 3D glow blobs */
+//   &::before,
+//   &::after {
+//     content: "";
+//     position: absolute;
+//     width: 250px;
+//     height: 250px;
+//     border-radius: 50%;
+//     filter: blur(120px);
+//     opacity: 0.4;
+//     z-index: 0;
+//     animation: float3D 10s infinite alternate;
+//   }
+
+//   &::before {
+//     top: -50px;
+//     left: -50px;
+//     background: #80deea; // teal glow
+//   }
+
+//   &::after {
+//     bottom: -50px;
+//     right: -50px;
+//     background: #b39ddb; // purple glow
+//     animation-duration: 12s;
+//   }
+
+//   /* Keep content above animation */
+//   > * {
+//     position: relative;
+//     z-index: 1;
+//   }
+
+//   /* CARDS */
+//   .card {
+//     background: #fff;
+//     border-radius: 20px;
+//     padding: 1.2rem;
+//     margin-bottom: 1.5rem;
+//     transition: all 0.4s ease;
+//     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12); // deeper 3D shadow
+
+//     &:hover {
+//       transform: translateY(-10px) rotateX(2deg) scale(1.02);
+//       box-shadow: 0 30px 60px rgba(0,0,0,0.18);
+//     }
+
+//     h4,
+//     h5 {
+//       color: #00796b; // deep teal
+//       font-weight: 700;
+//     }
+
+//     p {
+//       color: #333;
+//     }
+
+//     /* PRIMARY BUTTON */
+//     .btn-primary {
+//       background: linear-gradient(135deg, #4db6ac, #00796b); // teal gradient
+//       border: none;
+//       border-radius: 12px;
+//       font-weight: 600;
+//       padding: 0.55rem 1.1rem;
+//       box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+//       transition: all 0.3s ease;
+
+//       &:hover {
+//         transform: translateY(-3px) scale(1.05);
+//         box-shadow: 0 15px 35px rgba(0,0,0,0.18);
+//         background: linear-gradient(135deg, #00796b, #4db6ac);
+//       }
+//     }
+
+//     /* INPUTS */
+//     .form-control {
+//       border-radius: 12px;
+//       border: 1px solid #b2dfdb; // soft teal border
+//       background: #fff;
+//       color: #1a1a1a;
+//       transition: all 0.25s ease;
+
+//       &:focus {
+//         border-color: #4db6ac;
+//         box-shadow: 0 0 0 0.25rem rgba(77,182,172,0.25);
+//       }
+//     }
+//   }
+
+//   /* TABLE */
+//   table {
+//     background: #fff;
+//     border-radius: 16px;
+//     overflow: hidden;
+//     box-shadow: 0 12px 35px rgba(0,0,0,0.08);
+
+//     th {
+//       background: #b2dfdb; // teal header
+//       font-weight: 600;
+//       color: #004d40;
+//       border-bottom: none;
+//     }
+
+//     td {
+//       color: #333;
+//       vertical-align: middle;
+//     }
+
+//     tr:hover td {
+//       background: #e0f2f1; // subtle hover
+//     }
+//   }
+
+//   .table-responsive {
+//     height: 15rem !important;
+//     border-radius: 16px;
+//     box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+//   }
+// }
+
+// /* 3D float animation */
+// @keyframes float3D {
+//   0% { transform: translateY(0) translateX(0) scale(1); }
+//   50% { transform: translateY(-25px) translateX(15px) scale(1.05); }
+//   100% { transform: translateY(-50px) translateX(0) scale(1.1); }
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// /* ===============================
+//    BOT LIST – NURSEBOT THEME
+//    =============================== */
+
+// .bot-list-container {
+//   min-height: 100vh;
+//   padding: 1.5rem;
+//   font-family: "Poppins", sans-serif;
+//   background: linear-gradient(135deg, #e8f2ff, #f7fbff);
+//   position: relative;
+//   overflow: hidden;
+
+//   /* soft medical AI glow */
+//   &::before {
+//     content: "";
+//     position: absolute;
+//     inset: 0;
+//     background:
+//       radial-gradient(circle at 15% 20%, rgba(116, 185, 255, 0.25), transparent 45%),
+//       radial-gradient(circle at 85% 80%, rgba(85, 239, 196, 0.25), transparent 45%);
+//     animation: bgFloat 14s ease-in-out infinite alternate;
+//     z-index: 0;
+//   }
+
+//   > * {
+//     position: relative;
+//     z-index: 1;
+//   }
+
+//   /* ===============================
+//      CARDS – 3D GLASS EFFECT
+//      =============================== */
+
+//   .card {
+//     border: none;
+//     border-radius: 22px;
+//     background: rgba(255, 255, 255, 0.85);
+//     backdrop-filter: blur(18px);
+//     box-shadow:
+//       0 18px 45px rgba(0, 0, 0, 0.12),
+//       inset 0 1px 0 rgba(255, 255, 255, 0.6);
+//     transition: all 0.35s ease;
+
+//     &:hover {
+//       transform: translateY(-6px);
+//       box-shadow:
+//         0 30px 70px rgba(9, 132, 227, 0.25),
+//         inset 0 1px 0 rgba(255, 255, 255, 0.7);
+//     }
+
+//     h4 {
+//       color: #0984e3;
+//       font-weight: 700;
+//     }
+
+//     h5 {
+//       color: #2d3436;
+//       font-weight: 600;
+//     }
+//   }
+
+//   /* ===============================
+//      FORM CONTROLS
+//      =============================== */
+
+//   .form-label {
+//     color: #2d3436;
+//   }
+
+//   .form-control {
+//     border-radius: 14px;
+//     border: 1px solid #dfe6e9;
+//     padding: 0.65rem 0.85rem;
+//     transition: all 0.25s ease;
+
+//     &:focus {
+//       border-color: #74b9ff;
+//       box-shadow: 0 0 0 0.2rem rgba(116, 185, 255, 0.25);
+//     }
+//   }
+
+//   /* ===============================
+//      PRIMARY BUTTON
+//      =============================== */
+
+//   .btn-primary {
+//     background: linear-gradient(135deg, #74b9ff, #0984e3);
+//     border: none;
+//     border-radius: 16px;
+//     font-weight: 600;
+//     letter-spacing: 0.3px;
+//     box-shadow: 0 10px 25px rgba(9, 132, 227, 0.35);
+//     transition: all 0.3s ease;
+
+//     &:hover {
+//       background: linear-gradient(135deg, #0984e3, #74b9ff);
+//       transform: translateY(-2px);
+//       box-shadow: 0 16px 35px rgba(9, 132, 227, 0.45);
+//     }
+//   }
+
+//   /* ===============================
+//      TABLE
+//      =============================== */
+
+//   .table-responsive {
+//     border-radius: 18px;
+//     overflow: hidden;
+//     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+//   }
+
+//   table {
+//     margin-bottom: 0;
+//     background: #ffffff;
+
+//     thead {
+//       background: linear-gradient(135deg, #e3f2ff, #f1f8ff);
+
+//       th {
+//         font-weight: 600;
+//         color: #2d3436;
+//         border-bottom: none;
+//       }
+//     }
+
+//     tbody {
+//       tr {
+//         transition: background 0.25s ease;
+
+//         &:hover {
+//           background: #f5faff;
+//         }
+
+//         td {
+//           vertical-align: middle;
+//           color: #2d3436;
+//         }
+//       }
+//     }
+//   }
+
+//   /* ===============================
+//      ACTION BUTTONS
+//      =============================== */
+
+//   .btn-outline-primary {
+//     border-radius: 14px;
+//     border-color: #74b9ff;
+//     color: #0984e3;
+//     font-weight: 500;
+
+//     &:hover {
+//       background: #74b9ff;
+//       color: #fff;
+//       box-shadow: 0 6px 16px rgba(9, 132, 227, 0.35);
+//     }
+//   }
+
+//   .btn-outline-danger {
+//     border-radius: 14px;
+//     font-weight: 500;
+
+//     &:hover {
+//       box-shadow: 0 6px 16px rgba(214, 48, 49, 0.35);
+//     }
+//   }
+
+//   /* ===============================
+//      PAGINATION
+//      =============================== */
+
+//   .pagination {
+//     .page-item {
+//       .page-link {
+//         border-radius: 12px;
+//         margin: 0 4px;
+//         color: #0984e3;
+//         border: none;
+//         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+//         transition: all 0.25s ease;
+//       }
+
+//       &.active .page-link {
+//         background: linear-gradient(135deg, #74b9ff, #0984e3);
+//         color: #fff;
+//         box-shadow: 0 8px 20px rgba(9, 132, 227, 0.45);
+//       }
+//     }
+//   }
+// }
+
+// /* ===============================
+//    BACKGROUND FLOAT ANIMATION
+//    =============================== */
+
+// @keyframes bgFloat {
+//   0% {
+//     transform: translateY(0) scale(1);
+//   }
+//   100% {
+//     transform: translateY(-35px) scale(1.12);
+//   }
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// /* ===============================
+//    BOT LIST – NURSEBOT FINAL UI
+//    =============================== */
+
+// .bot-list-container {
+//   min-height: 100vh;
+//   padding: 2rem;
+//   font-family: "Poppins", sans-serif;
+//   background: linear-gradient(135deg, #f8fbff, #edf4ff);
+//   position: relative;
+//   overflow: hidden;
+
+//   /* floating gradient blobs */
+//   &::before,
+//   &::after {
+//     content: "";
+//     position: absolute;
+//     width: 420px;
+//     height: 420px;
+//     border-radius: 50%;
+//     filter: blur(120px);
+//     opacity: 0.45;
+//     animation: floatBg 18s ease-in-out infinite alternate;
+//   }
+
+//   &::before {
+//     background: #74b9ff;
+//     top: -120px;
+//     left: -120px;
+//   }
+
+//   &::after {
+//     background: #c3c6c5ee;
+//     bottom: -120px;
+//     right: -120px;
+//     animation-delay: 6s;
+//   }
+
+//   > * {
+//     position: relative;
+//     z-index: 1;
+//   }
+
+//   /* ===============================
+//      CARDS – GLASS + 3D + ENTRANCE
+//      =============================== */
+
+//   .card {
+//     border: none;
+//     border-radius: 24px;
+//     background: rgba(255, 255, 255, 0.85);
+//     backdrop-filter: blur(22px);
+//     box-shadow:
+//       0 25px 60px rgba(0, 0, 0, 0.12),
+//       inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+//     opacity: 0;
+//     transform: translateY(40px) scale(0.96);
+//     animation: cardEnter 0.7s ease forwards;
+
+//     transform-style: preserve-3d;
+//     transition: all 0.35s ease;
+
+//     &:hover {
+//       transform: translateY(-8px) scale(1) rotateX(2deg) rotateY(-2deg);
+//       box-shadow:
+//         0 35px 80px rgba(9, 132, 227, 0.25),
+//         inset 0 1px 0 rgba(255, 255, 255, 0.7);
+//     }
+
+//     h4 {
+//       color: #0984e3;
+//       font-weight: 700;
+//     }
+
+//     h5 {
+//       color: #2d3436;
+//       font-weight: 600;
+//     }
+//   }
+
+//   /* second card delayed */
+//   .card:nth-of-type(2) {
+//     animation-delay: 0.15s;
+//   }
+
+//   /* ===============================
+//      FORM CONTROLS
+//      =============================== */
+
+//   .form-label {
+//     font-weight: 600;
+//     color: #2d3436;
+//   }
+
+//   .form-control {
+//     border-radius: 16px;
+//     border: 1px solid #e3eaf3;
+//     padding: 0.75rem 0.95rem;
+//     transition: all 0.25s ease;
+
+//     &:focus {
+//       border-color: #74b9ff;
+//       box-shadow: 0 0 0 0.25rem rgba(116, 185, 255, 0.25);
+//     }
+//   }
+
+//   /* ===============================
+//      PRIMARY BUTTON
+//      =============================== */
+
+//   .btn-primary {
+//     background: linear-gradient(135deg, #74b9ff, #0984e3);
+//     border: none;
+//     border-radius: 18px;
+//     font-weight: 600;
+//     letter-spacing: 0.4px;
+//     box-shadow: 0 14px 35px rgba(9, 132, 227, 0.35);
+//     transition: all 0.3s ease;
+
+//     &:hover {
+//       transform: translateY(-3px);
+//       box-shadow: 0 22px 45px rgba(9, 132, 227, 0.45);
+//     }
+
+//     &:active {
+//       transform: scale(0.97);
+//     }
+//   }
+
+//   /* ===============================
+//      TABLE
+//      =============================== */
+
+//   .table-responsive {
+//     border-radius: 20px;
+//     overflow: hidden;
+//     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+//   }
+
+//   table {
+//     background: #ffffff;
+//     margin-bottom: 0;
+
+//     thead {
+//       background: linear-gradient(135deg, #eef5ff, #f7fbff);
+
+//       th {
+//         font-weight: 600;
+//         color: #2d3436;
+//         border-bottom: none;
+//       }
+//     }
+
+//     tbody tr {
+//       opacity: 0;
+//       animation: rowFadeUp 0.45s ease forwards;
+//       transition: all 0.25s ease;
+
+//       &:hover {
+//         background: #f4f9ff;
+//         transform: scale(1.01);
+//       }
+//     }
+
+//     tbody tr:nth-child(1) { animation-delay: 0.05s; }
+//     tbody tr:nth-child(2) { animation-delay: 0.1s; }
+//     tbody tr:nth-child(3) { animation-delay: 0.15s; }
+//     tbody tr:nth-child(4) { animation-delay: 0.2s; }
+//     tbody tr:nth-child(5) { animation-delay: 0.25s; }
+//   }
+
+//   /* ===============================
+//      ACTION BUTTONS
+//      =============================== */
+
+//   .btn-outline-primary {
+//     border-radius: 14px;
+//     border-color: #74b9ff;
+//     color: #0984e3;
+//     transition: all 0.25s ease;
+
+//     &:hover {
+//       background: #74b9ff;
+//       color: #fff;
+//       box-shadow: 0 8px 20px rgba(9, 132, 227, 0.35);
+//     }
+//   }
+
+//   .btn-outline-danger {
+//     border-radius: 14px;
+
+//     &:hover {
+//       box-shadow: 0 8px 20px rgba(214, 48, 49, 0.35);
+//     }
+//   }
+
+//   /* ===============================
+//      PAGINATION
+//      =============================== */
+
+//   .pagination .page-link {
+//     border-radius: 14px;
+//     margin: 0 4px;
+//     color: #0984e3;
+//     border: none;
+//     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+//     transition: all 0.25s ease;
+//   }
+
+//   .pagination .active .page-link {
+//     background: linear-gradient(135deg, #74b9ff, #0984e3);
+//     color: #fff;
+//     box-shadow: 0 10px 28px rgba(9, 132, 227, 0.45);
+//   }
+// }
+
+// /* ===============================
+//    ANIMATIONS
+//    =============================== */
+
+// @keyframes cardEnter {
+//   from {
+//     opacity: 0;
+//     transform: translateY(40px) scale(0.96);
+//   }
+//   to {
+//     opacity: 1;
+//     transform: translateY(0) scale(1);
+//   }
+// }
+
+// @keyframes rowFadeUp {
+//   from {
+//     opacity: 0;
+//     transform: translateY(14px);
+//   }
+//   to {
+//     opacity: 1;
+//     transform: translateY(0);
+//   }
+// }
+
+// @keyframes floatBg {
+//   from {
+//     transform: translateY(0) scale(1);
+//   }
+//   to {
+//     transform: translateY(-40px) scale(1.15);
+//   }
+// }
+
+// /* ===============================
+//    DARK MODE (OPTIONAL)
+//    =============================== */
+
+// body.dark {
+//   .bot-list-container {
+//     background: linear-gradient(135deg, #0f172a, #020617);
+//   }
+
+//   .card {
+//     background: rgba(15, 23, 42, 0.85);
+//     color: #e5e7eb;
+//   }
+
+//   table {
+//     background: #020617;
+//     color: #e5e7eb;
+//   }
+// }
+
+
+
+
+
+
+
+
+/* NurseBot BotList.scss - Full Theme */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+$primary-color: #276470; // NurseBot teal
+$danger-color: #c01a1a;  // NurseBot red
+$secondary-color: #000000; 
+$bg-color: #f0f8ff;       // Soft healthcare bg
+$card-bg: #ffffff; 
+$shadow-light: rgba(0, 0, 0, 0.05);
+$shadow-hover: rgba(13, 202, 240, 0.15);
+$table-hover: #e0f7fa;
+
+.bot-list-container {
+  font-family: "Poppins", sans-serif;
+  background-color: $bg-color;
+  min-height: 100vh;
+  padding: 3rem 0;
+
+  .card {
+    background: $card-bg;
+    border: none;
+    border-radius: 1.25rem;
+    box-shadow: 0 6px 18px $shadow-light;
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 8px 20px $shadow-hover;
+    }
+
+    h4, h5 {
+      color: $primary-color;
+      font-weight: 700;
+    }
+
+    form {
+      .form-label {
+        color: $secondary-color;
+      }
+
+      .form-control {
+        border-radius: 1rem;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
+
+        &:focus {
+          border-color: $primary-color;
+          box-shadow: 0 0 0 0.2rem rgba(13, 202, 240, 0.25);
+        }
+      }
+
+      textarea.form-control {
+        resize: none;
+      }
+    }
+
+    .btn {
+      border-radius: 1rem;
+      font-weight: 600;
+      text-transform: capitalize;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px $shadow-light;
+
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  /* NurseBot themed buttons */
+  .nurse-btn {
+    &.btn-outline-primary {
+      color: $primary-color !important;
+      border-color: $primary-color !important;
+
+      &:hover {
+        background-color: $primary-color !important;
+        color: #fff !important;
+        border-color: $primary-color !important;
+        box-shadow: 0 6px 16px $shadow-hover !important;
+      }
+    }
+
+    &.btn-outline-danger {
+      color: $danger-color !important;
+      border-color: $danger-color !important;
+
+      &:hover {
+        background-color: $danger-color !important;
+        color: #fff !important;
+        border-color: $danger-color !important;
+        box-shadow: 0 6px 16px $shadow-hover !important;
+      }
+    }
+  }
+
+  .shadow-3d-btn {
+    box-shadow: 0 4px 12px $shadow-light;
+  }
+
+  /* Table */
+  .shadow-3d-table {
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 6px 16px $shadow-light;
+
+    table {
+      th, td {
+        vertical-align: middle;
+      }
+
+      thead {
+        background-color: lighten($primary-color, 35%);
+        color: $primary-color;
+        font-weight: 600;
+      }
+
+      tbody tr {
+        transition: all 0.2s ease;
+        cursor: pointer;
+
+        &:hover {
+          background-color: $table-hover;
+        }
+      }
+    }
+  }
+
+  /* Pagination */
+  .pagination {
+    .page-item.active .page-link {
+      background-color: $primary-color;
+      border-color: $primary-color;
+      color: #fff;
+    }
+
+    .page-link {
+      border-radius: 0.5rem;
+      color: $primary-color;
+      font-weight: 500;
+
+      &:hover {
+        background-color: lighten($primary-color, 35%);
+        color: $primary-color;
+      }
+    }
+  }
+
+  /* Responsive tweaks */
+  @media (max-width: 768px) {
+    .card {
+      padding: 2rem 1.5rem;
+    }
+
+    .btn {
+      font-size: 0.95rem;
+      padding: 0.5rem 1rem;
+    }
+
+    .table-responsive {
+      font-size: 0.9rem;
+    }
+  }
+}
