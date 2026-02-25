@@ -542,7 +542,8 @@ import { Table, Pagination, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import ApiService from "../../../../services/Api.service";
 import { toast } from "react-toastify";
-import { FaUpload, FaComments, FaChartLine } from "react-icons/fa";
+import { FaUpload, FaComments, FaChartLine, FaTrash } from "react-icons/fa";
+import DeleteConfirmModal from "../../../../components/confirmation.modal";
 
 const BotList = () => {
   const [bots, setBots] = useState([]);
@@ -550,6 +551,12 @@ const BotList = () => {
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState({});
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [botToDelete, setBotToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const botsPerPage = 4;
   const navigate = useNavigate();
@@ -588,7 +595,16 @@ const BotList = () => {
     }
 
     if (data) {
-      fetchAllChatBots();
+      // Add new bot to the list locally instead of refetching all bots
+      const newBot = {
+        _id: data.botId || { $oid: Date.now().toString() },
+        bot_name,
+        description: "",
+        namespace_id: data.namespace_id || "",
+        created_at: { $date: new Date().toISOString() },
+        hasUploadedReport: false
+      };
+      setBots(prevBots => [newBot, ...prevBots]);
       toast.success(data.message || "Bot created successfully!");
     }
 
@@ -596,30 +612,49 @@ const BotList = () => {
   };
 
   const fetchAllChatBots = async () => {
-    let { data, error } = await ApiService.getAllChatBots({});
-    if (error) {
-      toast.error(error.response?.data?.message || "Failed to fetch bots.");
-      return;
-    }
-    if (data) {
-      // Check each bot for uploaded files
-      const botsWithFiles = await Promise.all(
-        data.result.map(async (bot) => {
-          try {
-            const { data: fileData } = await ApiService.checkBotFiles(bot._id["$oid"]);
-            return {
-              ...bot,
-              hasUploadedReport: fileData?.hasFiles || false
-            };
-          } catch (err) {
-            return {
-              ...bot,
-              hasUploadedReport: false
-            };
-          }
-        })
-      );
-      setBots(botsWithFiles);
+    try {
+      setInitialLoading(true);
+      let { data, error } = await ApiService.getAllChatBots({});
+      
+      if (error) {
+        toast.error(error.response?.data?.message || "Failed to fetch bots.");
+        return;
+      }
+      
+      if (data && data.result) {
+        // Batch file checking with parallel requests and timeout
+        const botsWithFiles = await Promise.all(
+          data.result.map(async (bot) => {
+            try {
+              // Add timeout to prevent hanging requests
+              const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Timeout')), 3000)
+              );
+              
+              const filePromise = ApiService.checkBotFiles(bot._id["$oid"]);
+              const fileData = await Promise.race([filePromise, timeoutPromise]);
+              
+              return {
+                ...bot,
+                hasUploadedReport: fileData?.hasFiles || false
+              };
+            } catch (err) {
+              console.warn(`Failed to check files for bot ${bot._id["$oid"]}:`, err);
+              return {
+                ...bot,
+                hasUploadedReport: false
+              };
+            }
+          })
+        );
+        
+        setBots(botsWithFiles);
+      }
+    } catch (err) {
+      console.error('Error fetching bots:', err);
+      toast.error("Failed to load patients. Please try again.");
+    } finally {
+      setInitialLoading(false);
     }
   };
 
@@ -631,12 +666,45 @@ const BotList = () => {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const goToPage = (url, id, namespace_id = "") => {
+    // Generate namespace_id if not provided (for backward compatibility)
+    if (!namespace_id) {
+      namespace_id = `ns_${id}_${Date.now()}`;
+    }
     navigate(`${url}?id=${id}&namespace_id=${namespace_id}`);
   };
 
   const handleAnalyze = (bot) => {
     // Always try to analyze - let the backend handle file checking
     navigate(`/default/chat?id=${bot._id["$oid"]}&namespace_id=${bot.namespace_id}&analyze=true`);
+  };
+
+  const handleDeleteClick = (bot) => {
+    setBotToDelete(bot);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!botToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      const { data, error } = await ApiService.deleteChatBot(botToDelete._id["$oid"]);
+      
+      if (error) {
+        toast.error(error.response?.data?.message || "Failed to delete patient");
+      } else if (data) {
+        toast.success(data.message || "Patient deleted successfully");
+        // Remove the bot from the list
+        setBots(bots.filter(bot => bot._id["$oid"] !== botToDelete._id["$oid"]));
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+      toast.error("Failed to delete patient");
+    } finally {
+      setIsDeleting(false);
+      setBotToDelete(null);
+      setShowDeleteModal(false);
+    }
   };
 
   return (
@@ -688,11 +756,24 @@ const BotList = () => {
 
           {/* BOT LIST TABLE CARD */}
           <div className="card p-4 rounded-4 shadow-3d">
-            <h5 className="fw-bold mb-3 text-secondary">List of Patient Bots</h5>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5 className="fw-bold text-secondary mb-0">List of Patient Bots</h5>
+              {initialLoading && (
+                <div className="d-flex align-items-center gap-2">
+                  <div className="spinner-border spinner-border-sm" role="status"></div>
+                  <span className="text-muted">Loading patients...</span>
+                </div>
+              )}
+            </div>
 
-            {bots.length === 0 ? (
+            {initialLoading ? (
+              <div className="text-center py-5">
+                <div className="spinner-border text-primary mb-3" role="status" style={{width: '3rem', height: '3rem'}}></div>
+                <p className="text-muted mb-0">Loading patients...</p>
+              </div>
+            ) : bots.length === 0 ? (
               <p className="text-muted text-center mb-0">
-                No bots created yet.
+                No patients created yet.
               </p>
             ) : (
               <>
@@ -741,6 +822,14 @@ const BotList = () => {
                                 className="nurse-btn d-flex align-items-center gap-1"
                               >
                                 <FaComments /> Chat
+                              </Button>
+                              <Button
+                                onClick={() => handleDeleteClick(bot)}
+                                size="sm"
+                                variant="outline-dark"
+                                className="nurse-btn d-flex align-items-center gap-1"
+                              >
+                                <FaTrash /> Delete
                               </Button>
                             </div>
                           </td>
@@ -798,6 +887,18 @@ const BotList = () => {
               </>
             )}
           </div>
+
+          {/* Delete Confirmation Modal */}
+          <DeleteConfirmModal
+            show={showDeleteModal}
+            onClose={() => {
+              setShowDeleteModal(false);
+              setBotToDelete(null);
+            }}
+            onConfirm={handleConfirmDelete}
+            message={`Are you sure you want to delete patient "${botToDelete?.bot_name || ""}"? This will also remove all uploaded reports and chat history.`}
+            isDeleting={isDeleting}
+          />
         </div>
       </div>
     </div>

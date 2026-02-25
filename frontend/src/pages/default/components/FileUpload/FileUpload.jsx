@@ -298,13 +298,15 @@
 
 
 import React, { useEffect, useState, useRef } from "react";
-import { Button, Table, Pagination, Spinner, Alert } from "react-bootstrap";
+import { Button, Table, Pagination, Spinner, Alert, Modal } from "react-bootstrap";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import ApiService from "../../../../services/Api.service";
 import { toast } from "react-toastify";
 import { bytesToMB } from "../../../../utils/helper";
 import DeleteConfirmModal from "../../../../components/confirmation.modal";
-import { FaEye, FaSync, FaFilePdf } from "react-icons/fa";
+import { FaEye, FaSync, FaFilePdf, FaDownload, FaExpand } from "react-icons/fa";
+import { getVariable } from "../../../../utils/localStorage";
+import { apiBaseUrl } from "../../../../constants/constant.js";
 import "./FileUpload.scss";
 
 const PdfManager = () => {
@@ -322,6 +324,10 @@ const PdfManager = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletetionItem, setdeletetionItem] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showViewerModal, setShowViewerModal] = useState(false);
+  const [viewingFile, setViewingFile] = useState(null);
+  const [fileContent, setFileContent] = useState('');
+  const [viewerLoading, setViewerLoading] = useState(false);
 
   // Check if analyze parameter is present
   const isAnalyzeMode = searchParams.get("analyze") === "true";
@@ -331,67 +337,113 @@ const PdfManager = () => {
   }, []);
 
   const fetchAllFiles = async () => {
-    let { data, error } = await ApiService.getAllFiles(searchParams.get("id"));
+    try {
+      let { data, error } = await ApiService.getAllFiles(searchParams.get("id"));
 
-    if (error) {
-      toast.error(error.response.data.message);
-      return;
-    }
+      if (error) {
+        toast.error(error.response?.data?.message || "Failed to fetch files");
+        return;
+      }
 
-    if (data) {
-      setFiles(data.result);
+      if (data && data.result) {
+        setFiles(data.result);
+      } else {
+        setFiles([]);
+      }
+    } catch (err) {
+      console.error("Error fetching files:", err);
+      toast.error("Failed to load files");
+      setFiles([]);
     }
   };
 
   /* 📄 Select File */
   const handleFileChange = (e) => {
-    setSelectedFiles(e.target.files[0]);
+    if (e.target.files.length > 0) {
+      const file = e.target.files[0];
+      // Validate file type
+      if (file.type !== "application/pdf") {
+        toast.error("Please select a PDF file");
+        e.target.value = "";
+        return;
+      }
+      // Validate file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("File size should be less than 10MB");
+        e.target.value = "";
+        return;
+      }
+      setSelectedFiles(file);
+    } else {
+      setSelectedFiles(null);
+    }
   };
 
   /* 🔁 Upload / Replace */
   const uploadFile = async () => {
-    if (!selectedFiles) return;
-
-    setLoading(true);
-
-    // Replace existing file
-    if (files.length === 1) {
-      const existingFile = files[0];
-      await ApiService.deleteFile({
-        id: existingFile._id["$oid"],
-        name: existingFile.name,
-        namespace_id: existingFile.namespace_id,
-      });
-    }
-
-    const formData = new FormData();
-    formData.append("chatbot_id", searchParams.get("id"));
-    formData.append("namespace_id", searchParams.get("namespace_id"));
-    formData.append("files", selectedFiles);
-
-    let { data, error } = await ApiService.uploadFile(formData);
-    setLoading(false);
-
-    if (error) {
-      toast.error(error.response.data.message);
+    if (!selectedFiles) {
+      toast.error("Please select a file first");
       return;
     }
 
-    if (data) {
-      toast.success(
-        files.length === 1
-          ? "File replaced successfully"
-          : "File uploaded successfully"
-      );
-      fetchAllFiles();
-      resetFileInput();
-      
-      // If in analyze mode, redirect to chat after successful upload
-      if (isAnalyzeMode) {
-        setTimeout(() => {
-          navigate(`/default/chat?id=${searchParams.get("id")}&namespace_id=${searchParams.get("namespace_id")}&analyze=true`);
-        }, 1500);
+    const chatbotId = searchParams.get("id");
+    const namespaceId = searchParams.get("namespace_id");
+    
+    if (!chatbotId) {
+      toast.error("Missing chatbot ID");
+      return;
+    }
+    
+    if (!namespaceId) {
+      toast.error("Missing namespace ID. Please go back and select a bot again.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Replace existing file
+      if (files.length === 1) {
+        const existingFile = files[0];
+        await ApiService.deleteFile({
+          id: existingFile._id["$oid"],
+          name: existingFile.name,
+          namespace_id: existingFile.namespace_id,
+        });
       }
+
+      const formData = new FormData();
+      formData.append("chatbot_id", chatbotId);
+      formData.append("namespace_id", namespaceId);
+      formData.append("files", selectedFiles);
+
+      let { data, error } = await ApiService.uploadFile(formData);
+      setLoading(false);
+
+      if (error) {
+        toast.error(error.response?.data?.message || "Upload failed");
+        return;
+      }
+
+      if (data) {
+        toast.success(
+          files.length === 1
+            ? "File replaced successfully"
+            : "File uploaded successfully"
+        );
+        fetchAllFiles();
+        resetFileInput();
+        
+        // If in analyze mode, redirect to chat after successful upload
+        if (isAnalyzeMode) {
+          setTimeout(() => {
+            navigate(`/default/chat?id=${chatbotId}&namespace_id=${namespaceId}&analyze=true`);
+          }, 1500);
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      toast.error("Upload failed: " + err.message);
     }
   };
 
@@ -400,17 +452,145 @@ const PdfManager = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  /* 👁️ View PDF */
-  const handleViewFile = (file) => {
-    // Try multiple possible URL patterns for file viewing
-    const possibleUrls = [
-      `/api/files/view/${file.name}?namespace_id=${searchParams.get("namespace_id")}`,
-      `/api/files/download/${file.name}?namespace_id=${searchParams.get("namespace_id")}`,
-      `${window.location.origin}/api/files/view/${file.name}?namespace_id=${searchParams.get("namespace_id")}`,
-    ];
-    
-    // Try the first URL, fallback to others if needed
-    window.open(possibleUrls[0], "_blank");
+  /* 👁️ View PDF in Modal */
+  const handleViewInModal = async (file) => {
+    try {
+      console.log('Debug: File object:', file);
+      const fileId = file._id && file._id["$oid"] ? file._id["$oid"] : file._id;
+      console.log('Debug: Extracted file ID:', fileId);
+      
+      const token = getVariable('km_user_token');
+      console.log('Debug: Token exists:', !!token);
+      
+      if (!token) {
+        toast.error("Authentication required to view files");
+        return;
+      }
+
+      if (!fileId) {
+        toast.error("Invalid file ID format");
+        return;
+      }
+
+      setViewingFile(file);
+      setShowViewerModal(true);
+      setViewerLoading(true);
+      setFileContent('');
+      
+      // Use the correct API endpoint with authentication
+      const viewUrl = `${apiBaseUrl}files/view/${fileId}`;
+      console.log('Debug: View URL:', viewUrl);
+      
+      const response = await fetch(viewUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      console.log('Debug: View response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Debug: View error response:', errorText);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      // Get the file as blob
+      const blob = await response.blob();
+      
+      // Check if we got HTML instead of the expected file
+      if (blob.type === 'text/html' || blob.size < 1000) {
+        throw new Error("Backend returned HTML instead of file");
+      }
+      
+      // Convert blob to base64
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+      
+      setFileContent(base64);
+      setViewerLoading(false);
+      toast.success("Document loaded successfully");
+      
+    } catch (error) {
+      console.error('Error viewing file:', error);
+      toast.error("Failed to load document. Please try downloading instead.");
+      setViewerLoading(false);
+      // Don't close modal on error so user can try download
+    }
+  };
+
+  const closeViewerModal = () => {
+    setShowViewerModal(false);
+    setViewingFile(null);
+    setFileContent('');
+  };
+
+  /* 📥 Download File */
+  const handleDownloadFile = async (file) => {
+    try {
+      console.log('Debug: Download file object:', file);
+      const fileId = file._id && file._id["$oid"] ? file._id["$oid"] : file._id;
+      console.log('Debug: Download file ID:', fileId);
+      
+      const token = getVariable('km_user_token');
+      console.log('Debug: Download token exists:', !!token);
+      
+      if (!token) {
+        toast.error("Authentication required to download files");
+        return;
+      }
+
+      if (!fileId) {
+        toast.error("Invalid file ID format");
+        return;
+      }
+      
+      // Use authenticated fetch to get the file
+      const fileDownloadUrl = `${apiBaseUrl}files/view/${fileId}`;
+      console.log('Debug: Download URL:', fileDownloadUrl);
+      
+      const response = await fetch(fileDownloadUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      console.log('Debug: Download response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Debug: Download error response:', errorText);
+        toast.error(`Failed to download file: ${response.statusText}`);
+        return;
+      }
+
+      // Get the file as blob
+      const blob = await response.blob();
+      
+      // Create download link
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = file.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up blob URL
+      URL.revokeObjectURL(blobUrl);
+      
+      toast.success("File downloaded successfully");
+      
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error("Failed to download file");
+    }
   };
 
 
@@ -456,7 +636,7 @@ const PdfManager = () => {
         <div className="col-8">
           <div className="row align-items-center mb-4">
             <div className="col">
-              <h3 className="fw-bold text-primary">📄 PDF Upload Manager</h3>
+              <h3 className="fw-bold text-primary">📄 Report Upload Manager</h3>
             </div>
             <div className="col text-end">
               <Button variant="secondary" onClick={() => navigate(-1)}>
@@ -512,14 +692,24 @@ const PdfManager = () => {
                     <td>{bytesToMB(file.size).toFixed(3)}</td>
                     <td>{file.createdAt["$date"]}</td>
                     <td className="d-flex gap-2">
-                      {/* 👁️ VIEW */}
+                      {/* 👁️ VIEW IN MODAL */}
                       <Button
                         size="sm"
                         variant="outline-primary"
-                        onClick={() => handleViewFile(file)}
-                        title="View PDF"
+                        onClick={() => handleViewInModal(file)}
+                        title="View Document"
                       >
-                        <FaEye />
+                        <FaExpand />
+                      </Button>
+
+                      {/* 📥 DOWNLOAD */}
+                      <Button
+                        size="sm"
+                        variant="outline-success"
+                        onClick={() => handleDownloadFile(file)}
+                        title="Download PDF"
+                      >
+                        <FaDownload />
                       </Button>
 
                       {/* 🗑️ DELETE */}
@@ -557,6 +747,133 @@ const PdfManager = () => {
             message={`Delete "${deletetionItem?.name}" ?`}
             isDeleting={isDeleting}
           />
+
+          {/* Document Viewer Modal */}
+          <Modal
+            show={showViewerModal}
+            onHide={closeViewerModal}
+            size="xl"
+            centered
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>
+                <FaFilePdf className="me-2" />
+                {viewingFile?.name}
+              </Modal.Title>
+            </Modal.Header>
+            <Modal.Body style={{ padding: 0, height: '70vh' }}>
+              {viewerLoading ? (
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  height: '100%',
+                  flexDirection: 'column'
+                }}>
+                  <Spinner animation="border" variant="primary" />
+                  <div className="mt-3">Loading document...</div>
+                  <div className="text-muted small">File: {viewingFile?.name}</div>
+                  <div className="text-muted small">ID: {viewingFile?._id && viewingFile._id.$oid ? viewingFile._id.$oid : 'N/A'}</div>
+                </div>
+              ) : (
+                <div>
+                  <div style={{padding: '10px', backgroundColor: '#f8f9fa', borderBottom: '1px solid #dee2e6'}}>
+                    <strong>Debug Info:</strong>
+                    <br />File Content Length: {fileContent.length}
+                    <br />File Name: {viewingFile?.name}
+                    <br />Is PDF: {viewingFile?.name?.toLowerCase().endsWith('.pdf') ? 'Yes' : 'No'}
+                    <br />Content Type: {fileContent.startsWith('data:text/html') ? 'HTML (Error)' : fileContent.startsWith('data:application/pdf') ? 'PDF' : 'Unknown'}
+                  </div>
+                  {fileContent ? (
+                    fileContent.startsWith('data:text/html') ? (
+                      <div style={{
+                        padding: '20px',
+                        height: 'calc(70vh - 60px)',
+                        overflow: 'auto',
+                        backgroundColor: '#fff8dc',
+                        border: '2px solid #dc3545'
+                      }}>
+                        <div style={{color: '#dc3545', fontWeight: 'bold', marginBottom: '10px'}}>
+                          ⚠️ Backend returned HTML instead of file content
+                        </div>
+                        <div style={{fontSize: '12px', color: '#666'}}>
+                          This usually means the backend server is not running correctly or there's an authentication issue.
+                        </div>
+                        <iframe
+                          src={fileContent}
+                          style={{
+                            width: '100%',
+                            height: 'calc(100% - 60px)',
+                            border: '1px solid #ccc',
+                            borderRadius: '4px',
+                            marginTop: '10px'
+                          }}
+                          title="Backend Response"
+                        />
+                      </div>
+                    ) : viewingFile?.name?.toLowerCase().endsWith('.pdf') ? (
+                      <iframe
+                        src={fileContent}
+                        style={{
+                          width: '100%',
+                          height: 'calc(70vh - 60px)',
+                          border: 'none',
+                          borderRadius: '4px'
+                        }}
+                        title={viewingFile?.name}
+                      />
+                    ) : (
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: 'calc(70vh - 60px)'
+                      }}>
+                        <img
+                          src={fileContent}
+                          alt={viewingFile?.name}
+                          style={{
+                            maxWidth: '100%',
+                            maxHeight: 'calc(70vh - 60px)',
+                            objectFit: 'contain'
+                          }}
+                        />
+                      </div>
+                    )
+                  ) : (
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      height: 'calc(70vh - 60px)',
+                      flexDirection: 'column',
+                      color: '#e74c3c'
+                    }}>
+                      <div style={{fontSize: '48px', marginBottom: '16px'}}>❌</div>
+                      <div>No file content loaded</div>
+                      <div className="text-muted small">File: {viewingFile?.name}</div>
+                      <div className="text-muted small">ID: {viewingFile?._id && viewingFile._id.$oid ? viewingFile._id.$oid : 'N/A'}</div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={closeViewerModal}>
+                Close
+              </Button>
+              {fileContent && (
+                <Button
+                  variant="primary"
+                  href={fileContent}
+                  download={viewingFile?.name}
+                  target="_blank"
+                >
+                  Download
+                </Button>
+              )}
+            </Modal.Footer>
+          </Modal>
         </div>
       </div>
     </div>
@@ -760,16 +1077,50 @@ export default PdfManager;
 //       console.error("Vectorization error:", error);
 //       toast.error("Failed to analyze report");
 //     } finally {
-//       setVectorizing(false);
-//     }
-//   };
 
 //   /* 👁️ View PDF */
-//   const handleViewFile = (file) => {
-//     // Corrected URL - assuming your backend serves files at /api/files/view/:filename
-//     const viewUrl = `/api/files/view/${file.name}?namespace=${namespaceId}`;
-//     window.open(viewUrl, "_blank");
-//   };
+  const handleViewFile = async (file) => {
+    try {
+      const fileId = file._id["$oid"];
+      const token = getVariable('km_user_token');
+      
+      if (!token) {
+        toast.error("Authentication required to view files");
+        return;
+      }
+      
+      // Use authenticated fetch to get the file
+      const response = await fetch(`${window.location.origin}/api/files/view/${fileId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        toast.error(`Failed to view file: ${response.statusText}`);
+        return;
+      }
+
+      // Get the file as blob
+      const blob = await response.blob();
+      
+      // Create a temporary URL for the blob
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      // Open in new tab
+      window.open(blobUrl, '_blank');
+      
+      // Clean up the blob URL after a short delay
+      setTimeout(() => {
+        window.URL.revokeObjectURL(blobUrl);
+      }, 1000);
+      
+    } catch (error) {
+      toast.error("Failed to view file");
+    }
+  };
 
 //   const handleDeleteClick = (item) => {
 //     setdeletetionItem(item);

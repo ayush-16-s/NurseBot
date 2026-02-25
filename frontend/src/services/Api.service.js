@@ -46,6 +46,15 @@ const ApiService = {
     return { data, error, loading };
   },
 
+   deleteChatBot: async (botId) => {
+    const { data, loading, error } = await AxiosClient({
+      method: "DELETE",
+      url: `chat-bot/${botId}`,
+    });
+    
+    return { data, error, loading };
+  },
+
   //  startConversation: async (payload) => {
   //   const { data, loading, error } = await AxiosClient({
   //     method: "POST",
@@ -121,6 +130,18 @@ const ApiService = {
     const { data, loading, error } = await AxiosClient({
       method: "DELETE",
       url: `files/vectorize?namespace_id=${namespaceId}`
+    });
+    
+    return { data, error, loading };
+  },
+
+  // Analyze diabetes report
+  analyzeReport: async (chatBotId) => {
+    const { data, loading, error } = await AxiosClient({
+      method: "POST",
+      url: `files/analyze`,
+      data: { chatBotId },
+      contentType: 'application/json'
     });
     
     return { data, error, loading };
