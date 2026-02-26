@@ -549,7 +549,7 @@ const ChatPage = () => {
         
         // Add follow-up suggestions
         formattedResponse += "\n\nHOW CAN I HELP YOU FURTHER?\n";
-        formattedResponse += "You can ask me about:\n";
+        formattedResponse += "You can ask me on chat page about:\n";
         formattedResponse += "• Exercise recommendations tailored to your condition\n";
         formattedResponse += "• Diet planning and nutritional guidance\n";
         formattedResponse += "• Lifestyle modification strategies\n";
@@ -557,6 +557,7 @@ const ChatPage = () => {
         formattedResponse += "• When to consult your healthcare provider\n";
         formattedResponse += "• Medication information and guidance\n";
         formattedResponse += "• Complication prevention strategies\n";
+        formattedResponse += "\n💬 Click the 'Chat' button in the bot list to continue the conversation!";
         
         // Apply formatting to remove markdown characters
         const cleanResponse = formatDiabetesResponse(formattedResponse);
@@ -671,7 +672,7 @@ const ChatPage = () => {
           const text =
             typeof chunk === "string"
               ? chunk
-              : chunk?.text ?? chunk?.Ai_response ?? "";
+              : chunk?.content ?? chunk?.text ?? chunk?.Ai_response ?? "";
 
           setMessages((prev) => {
             const updated = [...prev];

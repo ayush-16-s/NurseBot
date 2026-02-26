@@ -46,7 +46,19 @@
 //     const formData = new FormData();
 //     formData.append("chatbot_id", searchParams.get("id"));
 //     formData.append("namespace_id", searchParams.get("namespace_id"));
-//     formData.append("files", selectedFiles);
+    
+//     // Append files correctly - backend expects List[UploadFile]
+//     if (selectedFiles) {
+//       // If single file, append it directly
+//       if (selectedFiles instanceof File) {
+//         formData.append("files", selectedFiles);
+//       } else if (selectedFiles instanceof FileList) {
+//         // Multiple files - append each one
+//         for (let i = 0; i < selectedFiles.length; i++) {
+//           formData.append("files", selectedFiles[i]);
+//         }
+//       }
+//     }
 
 //     let { data, error } = await ApiService.uploadFile(formData);
 //     setLoading(false);
@@ -55,7 +67,6 @@
 //       toast.error(error.response.data.message);
 //       return;
 //     }
-
 //     if (data) {
 //       fetchAllFiles();
 //       resetFileInput();
