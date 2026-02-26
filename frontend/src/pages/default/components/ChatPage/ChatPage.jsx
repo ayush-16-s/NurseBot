@@ -367,241 +367,200 @@
 
 
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "react-bootstrap";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "./ChatPage.scss";
-import ApiService, { startConversation } from "../../../../services/Api.service";
+import { startConversation } from "../../../../services/Api.service";
+import ApiService from "../../../../services/Api.service";
 import { PulseLoader } from "react-spinners";
-import { FaMicrophone, FaMicrophoneSlash, FaStop } from "react-icons/fa";
 
 const ChatPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
+  // Debug all URL parameters
+  console.log('🔍 All URL params:', Object.fromEntries(searchParams.entries()));
+  
   // Check if analyze parameter is present
-  const isAnalyzeMode = searchParams.get("analyze") === "true";
-
-  // Format response to clean up special characters and improve readability
-  const formatResponse = (text) => {
-    if (!text) return "";
-    
-    return text
-      // Remove excessive special characters and emojis
-      .replace(/[🩺👤💊📊🏃🥗⚕️⚠️❌✅📋🏥💬]/g, '')
-      // Clean up markdown formatting
-      .replace(/\*\*/g, '')
-      .replace(/##/g, '')
-      // Fix spacing and line breaks
-      .replace(/\n\s*\n\s*\n/g, '\n\n')  // Remove excessive empty lines
-      .replace(/\.+/g, '.')  // Fix multiple periods
-      .replace(/\s+/g, ' ')  // Fix multiple spaces
-      // Add proper line breaks for readability
-      .replace(/(\.)([A-Z])/g, '$1\n\n$2')  // New line after sentences
-      .replace(/(\:)([A-Z])/g, '$1\n\n$2')  // New line after colons
-      .trim();
-  };
+  const analyzeParam = searchParams.get("analyze");
+  console.log('📋 Raw analyze param:', analyzeParam);
+  console.log('📋 Analyze param type:', typeof analyzeParam);
+  
+  const isAnalyzeMode = analyzeParam === "true";
+  console.log('🎯 isAnalyzeMode:', isAnalyzeMode);
 
   const [messages, setMessages] = useState([
     { 
       question: "", 
       Ai_response: isAnalyzeMode 
-        ? formatResponse("Welcome to Diabetes Analysis! I'll analyze your glucose report and provide personalized insights about your diabetes condition.") 
-        : formatResponse("Hi, I'm NurseBot. How can I assist you today?") 
+        ? "Welcome to Diabetes Analysis! I'll analyze your glucose report and provide personalized insights about your diabetes condition." 
+        : "Hi, I'm NurseBot 🩺. How can I assist you today?" 
     },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [followUpAdded, setFollowUpAdded] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const [isSpeechSupported, setIsSpeechSupported] = useState(false);
-  const recognitionRef = useRef(null);
 
   useEffect(() => {
-    // Check if speech recognition is supported
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      setIsSpeechSupported(true);
-      
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
-      
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      recognition.lang = 'en-US';
-      
-      recognition.onresult = (event) => {
-        const current = event.resultIndex;
-        const transcript = event.results[current][0].transcript;
-        
-        if (event.results[current].isFinal) {
-          setInput(prev => prev + transcript + ' ');
-        }
-      };
-      
-      recognition.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
-        setIsListening(false);
-        
-        if (event.error === 'not-allowed') {
-          alert('Microphone access denied. Please allow microphone access to use voice typing.');
-        } else if (event.error === 'no-speech') {
-          console.log('No speech detected');
-        } else {
-          alert('Voice recognition error: ' + event.error);
-        }
-      };
-      
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-      
-      recognitionRef.current = recognition;
-    } else {
-      console.log('Speech recognition not supported');
-      setIsSpeechSupported(false);
-    }
+    console.log('🔄 useEffect triggered, isAnalyzeMode:', isAnalyzeMode);
     
     if (isAnalyzeMode) {
-      // Trigger automatic diabetes analysis
-      performDiabetesAnalysis();
+      console.log('✅ Analyze mode detected, starting analysis...');
+      // Add a small delay to ensure component is fully mounted
+      const timer = setTimeout(() => {
+        console.log('⏰ Timer triggered, calling performDiabetesAnalysis...');
+        performDiabetesAnalysis();
+      }, 100);
+      
+      return () => {
+        console.log('🧹 Cleanup: clearing timer');
+        clearTimeout(timer);
+      };
+    } else {
+      console.log('ℹ️ Regular chat mode, no auto-analysis');
     }
   }, [isAnalyzeMode]);
 
   const performDiabetesAnalysis = async () => {
-    const analysisMessage = {
-      question: "",
-      Ai_response: formatResponse("Analyzing your glucose report... Please wait while I review your blood sugar readings and prepare your personalized analysis.")
-    };
+    console.log('🔍 Starting diabetes analysis...');
     
-    setMessages([analysisMessage]);
-    setLoading(true);
-    let analysisSucceeded = false;
-
     try {
-      const botId = searchParams.get("id");
+      const analysisMessage = {
+        question: "",
+        Ai_response: "I'm analyzing your glucose report. Please wait while I process the information..."
+      };
+      
+      setMessages([analysisMessage]);
+      setLoading(true);
+      let analysisSucceeded = false;
+
       const namespaceId = searchParams.get("namespace_id");
+      console.log('📋 Namespace ID:', namespaceId);
       
-      console.log("Starting analysis for botId:", botId, "namespaceId:", namespaceId);
-      
-      // First check if files exist
-      const { data: filesData, error: filesError } = await ApiService.getAllFiles(botId);
-      
-      if (filesError) {
-        console.error("Error fetching files:", filesError);
+      if (!namespaceId) {
+        console.error('❌ Missing namespace ID');
         setMessages((prev) => [
           ...prev,
           { 
             question: "", 
-            Ai_response: formatResponse("File Check Error\n\nUnable to check uploaded files. Error: " + (filesError.message || "Unknown error") + "\n\nPlease try again or re-upload your report.") 
+            Ai_response: "Missing namespace ID. Please go back and select your patient profile again." 
           },
         ]);
-        return;
-      }
-      
-      if (!filesData || !filesData.result || filesData.result.length === 0) {
-        setMessages((prev) => [
-          ...prev,
-          { 
-            question: "", 
-            Ai_response: formatResponse("No Report Found\n\nI don't see any uploaded glucose reports for this patient. Please upload a glucose report first using the 'Upload Report' button, then try analyzing again.") 
-          },
-        ]);
+        setLoading(false);
         return;
       }
 
-      // Call the analyze endpoint
-      const { data: analysisData, error: analysisError } = await ApiService.analyzeReport(botId);
+      console.log('🔄 Calling comprehensive analysis API...');
+      // First try comprehensive diabetes analysis
+      const { data: analysisData, error: analysisError } = await ApiService.analyzeDiabetesReport(namespaceId);
+      
+      console.log('📊 Full API response:', { analysisData, analysisError });
       
       if (analysisError) {
-        console.error("Analysis error:", analysisError);
-        setMessages((prev) => [
-          ...prev,
-          { 
-            question: "", 
-            Ai_response: formatResponse("Analysis Error\n\n" + (analysisError.response?.data?.detail || analysisError.message || "Unknown error occurred during analysis")) 
-          },
-        ]);
+        console.error("❌ Comprehensive analysis error:", analysisError);
+        console.error("❌ Error details:", analysisError.response?.data?.detail || analysisError.message);
+        console.error("❌ Full error object:", analysisError);
+        
+        // Handle specific error cases
+        const errorDetail = analysisError.response?.data?.detail || analysisError.message;
+        if (errorDetail.includes('No readable content found') || 
+            errorDetail.includes('No glucose values found')) {
+          // Show user-friendly message for missing files/data
+          const errorMessage = {
+            question: "",
+            Ai_response: "📋 **Analysis Notice**\n\nI couldn't find any glucose reports or blood glucose values in the uploaded files for this patient.\n\n**To fix this:**\n• Upload PDF reports containing blood glucose or HbA1c values\n• Ensure the reports include medical test results\n• Try analyzing again after uploading the correct reports\n\nWould you like help with uploading the correct medical reports?"
+          };
+          setMessages(prev => [...prev.slice(0, -1), errorMessage]);
+          return;
+        }
+        
+        // Fallback to regular chat analysis for other errors
+        await fallbackChatAnalysis();
         return;
       }
-
-      console.log("Analysis result:", analysisData);
       
-      if (analysisData.status === "success" && analysisData.analysis) {
-        const analysis = analysisData.analysis;
+      if (!analysisData) {
+        console.error("❌ No analysis data received");
+        await fallbackChatAnalysis();
+        return;
+      }
+      
+      console.log('📋 Analysis data status:', analysisData.status);
+      console.log('📋 Analysis data keys:', Object.keys(analysisData));
+      
+      if (analysisData.status === 'success') {
+        // Display comprehensive analysis results
+        const comprehensiveReport = analysisData.comprehensive_report || "Analysis completed successfully.";
+        const extractedValues = analysisData.extracted_values || {};
+        const analysis = analysisData.analysis || {};
         
-        // Format the analysis response
-        let analysisText = `📋 **Diabetes Analysis Report**
-
-🩺 **Diabetes Type:** ${analysis.diabetes_type || "Type 2 Diabetes"}
-
-📊 **Glucose Level:** ${analysis.glucose_level || "High"}
-
-� **Key Findings:** ${analysis.key_findings || "Medical report analyzed. Please consult with your healthcare provider for detailed interpretation."}
-
-�💡 **Recommendations:`;
+        console.log('✅ Analysis successful, formatting results...');
         
-        if (analysis.suggestions && analysis.suggestions.length > 0) {
-          analysis.suggestions.forEach((suggestion, index) => {
-            analysisText += `\n${index + 1}. ${suggestion}`;
+        // Format and display results
+        let formattedResponse = "🩺 **COMPREHENSIVE DIABETES ANALYSIS**\n\n";
+        
+        // Add glucose values found
+        if (Object.keys(extractedValues).length > 0) {
+          formattedResponse += "📊 **GLUCOSE VALUES FOUND:**\n";
+          Object.entries(extractedValues).forEach(([key, values]) => {
+            if (values && values.length > 0) {
+              const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+              formattedResponse += `• ${label}: ${values.join(', ')} mg/dL\n`;
+            }
           });
+          formattedResponse += "\n";
         }
-
-        if (analysis.help_prompt) {
-          analysisText += `\n\n${analysis.help_prompt}`;
+        
+        // Add diabetes assessment
+        if (analysis.diabetes_status && analysis.diabetes_status !== 'Unknown') {
+          formattedResponse += "🔍 **DIABETES ASSESSMENT:**\n";
+          formattedResponse += `• Status: ${analysis.diabetes_status}\n`;
+          if (analysis.diabetes_type && analysis.diabetes_type !== 'Unknown') {
+            formattedResponse += `• Type: ${analysis.diabetes_type}\n`;
+          }
+          if (analysis.risk_level && analysis.risk_level !== 'Unknown') {
+            formattedResponse += `• Risk Level: ${analysis.risk_level}\n`;
+          }
+          formattedResponse += "\n";
         }
-
-        if (analysis.help_hints && analysis.help_hints.length > 0) {
-          analysisText += `\n\n**How I can help you:**`;
-          analysis.help_hints.forEach((hint, index) => {
-            analysisText += `\n• ${hint}`;
+        
+        // Add key findings
+        if (analysis.key_findings && analysis.key_findings.length > 0) {
+          formattedResponse += "📋 **KEY FINDINGS:**\n";
+          analysis.key_findings.forEach(finding => {
+            formattedResponse += `• ${finding}\n`;
           });
+          formattedResponse += "\n";
         }
+        
+        // Add comprehensive AI report
+        formattedResponse += "📝 **DETAILED ANALYSIS & RECOMMENDATIONS:**\n\n";
+        formattedResponse += comprehensiveReport;
+        
+        // Add follow-up suggestions
+        formattedResponse += "\n\n💡 **HOW CAN I HELP YOU FURTHER?**\n";
+        formattedResponse += "You can ask me about:\n";
+        formattedResponse += "• Exercise recommendations tailored to your condition\n";
+        formattedResponse += "• Diet planning and nutritional guidance\n";
+        formattedResponse += "• Lifestyle modification strategies\n";
+        formattedResponse += "• Blood sugar monitoring tips\n";
+        formattedResponse += "• When to consult your healthcare provider\n";
+        formattedResponse += "• Medication information and guidance\n";
+        formattedResponse += "• Complication prevention strategies\n";
         
         setMessages((prev) => [
-          ...prev.slice(0, -1), // Remove loading message
-          { 
-            question: "", 
-            Ai_response: formatResponse(analysisText)
-          },
+          ...prev,
+          { question: "", Ai_response: formattedResponse }
         ]);
         
         analysisSucceeded = true;
         
-        // If redirect_to_chat is true, we can add a follow-up message
-        if (analysisData.redirect_to_chat) {
-          setTimeout(() => {
-            setMessages((prev) => {
-              const hasFollowUp = prev.some(msg => 
-                msg.Ai_response && msg.Ai_response.includes("Feel free to ask me")
-              );
-              if (!hasFollowUp) {
-                return [
-                  ...prev,
-                  {
-                    question: "",
-                    Ai_response: formatResponse(`Feel free to ask me about:
-• Diet planning and meal recommendations
-• Exercise routines and fitness advice  
-• Daily diabetes management tips
-• Blood sugar monitoring guidance
-• Lifestyle modification suggestions
-
-What would you like to know more about?`)
-                  }
-                ];
-              }
-              return prev;
-            });
-          }, 1000);
-        }
       } else {
-        setMessages((prev) => [
-          ...prev,
-          { 
-            question: "", 
-            Ai_response: formatResponse("Analysis completed but no detailed results were returned. Please try uploading a more detailed glucose report.") 
-          },
-        ]);
+        console.error("❌ Analysis failed with status:", analysisData.status);
+        console.error("❌ Full response:", analysisData);
+        // Fallback to regular analysis if comprehensive analysis fails
+        await fallbackChatAnalysis();
       }
       
     } catch (error) {
@@ -610,36 +569,62 @@ What would you like to know more about?`)
         ...prev,
         { 
           question: "", 
-          Ai_response: formatResponse("Analysis Error\n\nI apologize, but I couldn't analyze your report at the moment.\n\nError details: " + (error.message || "Unknown error") + "\n\nPlease ensure you have uploaded a valid glucose report (PDF format) and try again.") 
+          Ai_response: "I apologize, but I encountered an error while analyzing your report. Please try again." 
         },
       ]);
+      await fallbackChatAnalysis();
     } finally {
       setLoading(false);
+      setFollowUpAdded(true);
     }
   };
 
-  const toggleListening = () => {
-    if (!isSpeechSupported || !recognitionRef.current) return;
+  const fallbackChatAnalysis = async () => {
+    // Fallback to the original chat-based analysis
+    const { data: filesData } = await ApiService.getAllFiles(searchParams.get("id"));
     
-    if (isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    } else {
-      try {
-        recognitionRef.current.start();
-        setIsListening(true);
-      } catch (error) {
-        console.error('Error starting speech recognition:', error);
-        alert('Failed to start voice recognition. Please try again.');
+    if (!filesData || filesData.result.length === 0) {
+      setMessages((prev) => [
+        ...prev,
+        { 
+          question: "", 
+          Ai_response: "I don't see any uploaded glucose reports. Please upload your glucose report first, then try analyzing again." 
+        },
+      ]);
+      return;
+    }
+
+    await startConversation(
+      {
+        question: "I have uploaded my glucose report. Please analyze it thoroughly and provide specific details about my blood sugar levels, trends, and diabetes condition. Look at the actual uploaded PDF report and give me personalized insights about my glucose readings, any concerning patterns, and specific recommendations based on my data.",
+        namespace_id: searchParams.get("namespace_id"),
+        chatHistory: [],
+      },
+      (chunk) => {
+        const text =
+          typeof chunk === "string"
+            ? chunk
+            : chunk?.text ?? chunk?.Ai_response ?? "";
+
+        setMessages((prev) => {
+          const updated = [...prev];
+          const last = updated[updated.length - 1];
+
+          if (last.question === "" && last.Ai_response.includes("I'm analyzing your glucose report")) {
+            last.Ai_response = text;
+          } else {
+            const isDuplicate = updated.some(msg => 
+              msg.question === "" && msg.Ai_response === text
+            );
+            if (!isDuplicate) {
+              updated.push({ question: "", Ai_response: text });
+            }
+          }
+
+          return updated;
+        });
       }
-    }
-  };
-  
-  const stopListening = () => {
-    if (recognitionRef.current && isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    }
+    );
   };
 
   const handleSend = async (e) => {
@@ -655,7 +640,7 @@ What would you like to know more about?`)
         {
           question: input,
           namespace_id: searchParams.get("namespace_id"),
-          chatHistory: messages.filter(msg => msg.question || msg.Ai_response),
+          chatHistory: messages,
         },
         (chunk) => {
           const text =
@@ -667,13 +652,8 @@ What would you like to know more about?`)
             const updated = [...prev];
             const last = updated[updated.length - 1];
 
-            if (last.question === "") {
-              // Accumulate chunks for the current bot response
-              last.Ai_response += text;
-            } else {
-              // Create new bot response
-              updated.push({ question: "", Ai_response: text });
-            }
+            if (last.question === "") last.Ai_response += text;
+            else updated.push({ question: "", Ai_response: text });
 
             return updated;
           });
@@ -682,7 +662,7 @@ What would you like to know more about?`)
     } catch {
       setMessages((prev) => [
         ...prev,
-        { question: "", Ai_response: "Something went wrong. Please try again." },
+        { question: "", Ai_response: "⚠️ Something went wrong." },
       ]);
     } finally {
       setLoading(false);
@@ -720,7 +700,7 @@ What would you like to know more about?`)
                   {msg.question && <b>{msg.question}</b>}
                   {msg.Ai_response && (
                     <div style={{ whiteSpace: "pre-wrap" }}>
-                      {formatResponse(msg.Ai_response)}
+                      {msg.Ai_response}
                     </div>
                   )}
                 </div>
@@ -743,46 +723,13 @@ What would you like to know more about?`)
         {/* INPUT */}
         <div className="nb-chat-input">
           <form onSubmit={handleSend}>
-            <div className="input-group">
-              <input
-                type="text"
-                placeholder={isListening ? "Listening... Speak now" : "Type your message or click microphone"}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                className={isListening ? 'listening' : ''}
-                disabled={loading}
-              />
-              
-              {isSpeechSupported && (
-                <button
-                  type="button"
-                  className={`voice-btn ${isListening ? 'listening' : ''}`}
-                  onClick={toggleListening}
-                  disabled={loading}
-                  title={isListening ? "Stop recording" : "Start voice typing"}
-                >
-                  {isListening ? (
-                    <>
-                      <FaStop className="pulse-icon" />
-                      <span className="voice-text">Stop</span>
-                    </>
-                  ) : (
-                    <>
-                      <FaMicrophone />
-                      <span className="voice-text">Voice</span>
-                    </>
-                  )}
-                </button>
-              )}
-              
-              <button type="submit" disabled={loading || !input.trim()}>
-                {loading ? (
-                  <PulseLoader size={6} color="#fff" />
-                ) : (
-                  "Send"
-                )}
-              </button>
-            </div>
+            <input
+              type="text"
+              placeholder="Type your message…"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+            />
+            <button disabled={loading}>Send</button>
           </form>
         </div>
       </div>

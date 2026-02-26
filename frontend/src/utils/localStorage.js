@@ -3,7 +3,14 @@
 export const getVariable = (key) => {
   try {
     const value = localStorage.getItem(key);
-    return value ? JSON.parse(value) : '';
+    if (!value) return '';
+    
+    // Try to parse as JSON, but if it fails, return as string
+    try {
+      return JSON.parse(value);
+    } catch {
+      return value;
+    }
   } catch (error) {
     console.error(`Error getting localStorage item [${key}]:`, error);
     return '';

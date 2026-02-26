@@ -561,6 +561,46 @@ const BotList = () => {
   const botsPerPage = 4;
   const navigate = useNavigate();
 
+  // Helper function to safely extract ID from both string and ObjectId formats
+  const getBotId = (bot) => {
+    console.log('getBotId input:', bot);
+    
+    if (!bot || !bot._id) {
+      console.error('Bot or bot._id is missing');
+      return null;
+    }
+    
+    // Handle different possible formats
+    if (typeof bot._id === 'string') {
+      console.log('ID is string:', bot._id);
+      return bot._id;
+    }
+    
+    if (typeof bot._id === 'object' && bot._id.$oid) {
+      console.log('ID is object with $oid:', bot._id.$oid);
+      return bot._id.$oid;
+    }
+    
+    // Handle case where _id might be a plain object with oid property
+    if (typeof bot._id === 'object' && bot._id.oid) {
+      console.log('ID is object with oid:', bot._id.oid);
+      return bot._id.oid;
+    }
+    
+    // Additional fallback: try to access any property that looks like an ID
+    if (typeof bot._id === 'object') {
+      for (const key in bot._id) {
+        if (key.includes('oid')) {
+          console.log(`Found ID property ${key}:`, bot._id[key]);
+          return bot._id[key];
+        }
+      }
+    }
+    
+    console.error('Unknown ID format:', bot._id, typeof bot._id);
+    return null;
+  };
+
   useEffect(() => {
     fetchAllChatBots();
   }, []);
@@ -597,7 +637,7 @@ const BotList = () => {
     if (data) {
       // Add new bot to the list locally instead of refetching all bots
       const newBot = {
-        _id: data.botId || { $oid: Date.now().toString() },
+        _id: data.botId || { $oid: data.botId || "unknown" },
         bot_name,
         description: "",
         namespace_id: data.namespace_id || "",
@@ -622,24 +662,19 @@ const BotList = () => {
       }
       
       if (data && data.result) {
-        // Batch file checking with parallel requests and timeout
+        // Batch file checking with simplified approach (no timeout to avoid errors)
         const botsWithFiles = await Promise.all(
           data.result.map(async (bot) => {
             try {
-              // Add timeout to prevent hanging requests
-              const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Timeout')), 3000)
-              );
-              
-              const filePromise = ApiService.checkBotFiles(bot._id["$oid"]);
-              const fileData = await Promise.race([filePromise, timeoutPromise]);
+              // Simple file check without timeout to avoid hanging
+              const fileData = await ApiService.checkBotFiles(getBotId(bot));
               
               return {
                 ...bot,
                 hasUploadedReport: fileData?.hasFiles || false
               };
             } catch (err) {
-              console.warn(`Failed to check files for bot ${bot._id["$oid"]}:`, err);
+              console.warn(`Failed to check files for bot ${getBotId(bot)}:`, err);
               return {
                 ...bot,
                 hasUploadedReport: false
@@ -674,8 +709,29 @@ const BotList = () => {
   };
 
   const handleAnalyze = (bot) => {
-    // Always try to analyze - let the backend handle file checking
-    navigate(`/default/chat?id=${bot._id["$oid"]}&namespace_id=${bot.namespace_id}&analyze=true`);
+    try {
+      // Validate bot data before navigation
+      const botId = getBotId(bot);
+      const namespaceId = bot.namespace_id;
+      
+      console.log('🔍 Analyze button clicked');
+      console.log('📋 Bot data:', { botId, namespaceId });
+      
+      if (!botId || !namespaceId) {
+        console.error('❌ Invalid bot data:', { botId, namespaceId });
+        toast.error("Invalid patient data. Please try again.");
+        return;
+      }
+      
+      console.log('✅ Bot data validated, navigating...');
+      console.log('🎯 Target URL:', `/default/chat?id=${botId}&namespace_id=${namespaceId}&analyze=true`);
+      
+      // Navigate to chat with analyze parameter
+      navigate(`/default/chat?id=${botId}&namespace_id=${namespaceId}&analyze=true`);
+    } catch (error) {
+      console.error('Error navigating to analysis:', error);
+      toast.error("Failed to start analysis. Please try again.");
+    }
   };
 
   const handleDeleteClick = (bot) => {
@@ -688,14 +744,27 @@ const BotList = () => {
     
     setIsDeleting(true);
     try {
-      const { data, error } = await ApiService.deleteChatBot(botToDelete._id["$oid"]);
+      // Use helper function to safely extract bot ID
+      const botId = getBotId(botToDelete);
+      
+      console.log('Debug - botToDelete:', botToDelete);
+      console.log('Debug - extracted botId:', botId);
+      console.log('Debug - botId type:', typeof botId);
+      
+      if (!botId) {
+        console.error("Invalid bot ID:", botToDelete._id);
+        toast.error("Invalid patient ID");
+        return;
+      }
+      
+      const { data, error } = await ApiService.deleteChatBot(botId);
       
       if (error) {
         toast.error(error.response?.data?.message || "Failed to delete patient");
       } else if (data) {
         toast.success(data.message || "Patient deleted successfully");
         // Remove the bot from the list
-        setBots(bots.filter(bot => bot._id["$oid"] !== botToDelete._id["$oid"]));
+        setBots(bots.filter(bot => getBotId(bot) !== botId));
       }
     } catch (err) {
       console.error("Delete error:", err);

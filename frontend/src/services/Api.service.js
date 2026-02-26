@@ -135,7 +135,19 @@ const ApiService = {
     return { data, error, loading };
   },
 
-  // Analyze diabetes report
+  // Analyze diabetes report (simple version without Pinecone dependency)
+  analyzeReportSimple: async (chatBotId) => {
+    const { data, loading, error } = await AxiosClient({
+      method: "POST",
+      url: `files/analyze-simple`,
+      data: { chatBotId },
+      contentType: 'application/json'
+    });
+    
+    return { data, error, loading };
+  },
+
+  // Analyze diabetes report (original version with Pinecone)
   analyzeReport: async (chatBotId) => {
     const { data, loading, error } = await AxiosClient({
       method: "POST",
@@ -143,6 +155,29 @@ const ApiService = {
       data: { chatBotId },
       contentType: 'application/json'
     });
+    
+    return { data, error, loading };
+  },
+
+  // Comprehensive diabetes analysis
+  analyzeDiabetesReport: async (namespaceId) => {
+    console.log('🔍 API Service: Starting diabetes analysis for namespace:', namespaceId);
+    
+    const { data, loading, error } = await AxiosClient({
+      method: "POST",
+      url: `files/diabetes-analysis`,
+      data: { namespace_id: namespaceId },
+      contentType: 'application/json'
+    });
+    
+    console.log('📊 API Service: Raw response:', { data, loading, error });
+    
+    if (error) {
+      console.error('❌ API Service Error:', error);
+      console.error('❌ Error response:', error.response?.data);
+      console.error('❌ Error status:', error.response?.status);
+      console.error('❌ Error details:', error.response?.data?.detail || error.message);
+    }
     
     return { data, error, loading };
   },
