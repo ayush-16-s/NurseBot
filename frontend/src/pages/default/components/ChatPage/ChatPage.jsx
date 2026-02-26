@@ -469,7 +469,7 @@ const ChatPage = () => {
           // Show user-friendly message for missing files/data
           const errorMessage = {
             question: "",
-            Ai_response: "📋 **Analysis Notice**\n\nI couldn't find any glucose reports or blood glucose values in the uploaded files for this patient.\n\n**To fix this:**\n• Upload PDF reports containing blood glucose or HbA1c values\n• Ensure the reports include medical test results\n• Try analyzing again after uploading the correct reports\n\nWould you like help with uploading the correct medical reports?"
+            Ai_response: "Analysis Notice\n\nI couldn't find any glucose reports or blood glucose values in the uploaded files for this patient.\n\nTo fix this:\n• Upload PDF reports containing blood glucose or HbA1c values\n• Ensure the reports include medical test results\n• Try analyzing again after uploading the correct reports\n\nWould you like help with uploading the correct medical reports?"
           };
           setMessages(prev => [...prev.slice(0, -1), errorMessage]);
           return;
@@ -494,15 +494,24 @@ const ChatPage = () => {
         const comprehensiveReport = analysisData.comprehensive_report || "Analysis completed successfully.";
         const extractedValues = analysisData.extracted_values || {};
         const analysis = analysisData.analysis || {};
+        const patientInfo = analysisData.patient_info || {};
         
         console.log('✅ Analysis successful, formatting results...');
         
         // Format and display results
-        let formattedResponse = "🩺 **COMPREHENSIVE DIABETES ANALYSIS**\n\n";
+        let formattedResponse = "COMPREHENSIVE DIABETES ANALYSIS\n\n";
+        
+        // Add patient information if available
+        if (patientInfo.name) {
+          formattedResponse += `PATIENT: ${patientInfo.name}`;
+          if (patientInfo.age) formattedResponse += `, Age: ${patientInfo.age}`;
+          if (patientInfo.gender) formattedResponse += `, ${patientInfo.gender}`;
+          formattedResponse += "\n\n";
+        }
         
         // Add glucose values found
         if (Object.keys(extractedValues).length > 0) {
-          formattedResponse += "📊 **GLUCOSE VALUES FOUND:**\n";
+          formattedResponse += "GLUCOSE VALUES FOUND:\n";
           Object.entries(extractedValues).forEach(([key, values]) => {
             if (values && values.length > 0) {
               const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -514,7 +523,7 @@ const ChatPage = () => {
         
         // Add diabetes assessment
         if (analysis.diabetes_status && analysis.diabetes_status !== 'Unknown') {
-          formattedResponse += "🔍 **DIABETES ASSESSMENT:**\n";
+          formattedResponse += "DIABETES ASSESSMENT:\n";
           formattedResponse += `• Status: ${analysis.diabetes_status}\n`;
           if (analysis.diabetes_type && analysis.diabetes_type !== 'Unknown') {
             formattedResponse += `• Type: ${analysis.diabetes_type}\n`;
@@ -527,7 +536,7 @@ const ChatPage = () => {
         
         // Add key findings
         if (analysis.key_findings && analysis.key_findings.length > 0) {
-          formattedResponse += "📋 **KEY FINDINGS:**\n";
+          formattedResponse += "KEY FINDINGS:\n";
           analysis.key_findings.forEach(finding => {
             formattedResponse += `• ${finding}\n`;
           });
@@ -535,11 +544,11 @@ const ChatPage = () => {
         }
         
         // Add comprehensive AI report
-        formattedResponse += "📝 **DETAILED ANALYSIS & RECOMMENDATIONS:**\n\n";
+        formattedResponse += "DETAILED ANALYSIS & RECOMMENDATIONS:\n\n";
         formattedResponse += comprehensiveReport;
         
         // Add follow-up suggestions
-        formattedResponse += "\n\n💡 **HOW CAN I HELP YOU FURTHER?**\n";
+        formattedResponse += "\n\nHOW CAN I HELP YOU FURTHER?\n";
         formattedResponse += "You can ask me about:\n";
         formattedResponse += "• Exercise recommendations tailored to your condition\n";
         formattedResponse += "• Diet planning and nutritional guidance\n";
@@ -549,9 +558,12 @@ const ChatPage = () => {
         formattedResponse += "• Medication information and guidance\n";
         formattedResponse += "• Complication prevention strategies\n";
         
+        // Apply formatting to remove markdown characters
+        const cleanResponse = formatDiabetesResponse(formattedResponse);
+        
         setMessages((prev) => [
           ...prev,
-          { question: "", Ai_response: formattedResponse }
+          { question: "", Ai_response: cleanResponse }
         ]);
         
         analysisSucceeded = true;
@@ -625,6 +637,19 @@ const ChatPage = () => {
         });
       }
     );
+  };
+
+  const formatDiabetesResponse = (text) => {
+    return text
+      // Remove bold markdown (**)
+      .replace(/\*\*/g, '')
+      // Remove other markdown formatting
+      .replace(/###/g, '')
+      .replace(/##/g, '')
+      .replace(/#/g, '')
+      // Clean up extra spaces and line breaks
+      .replace(/\n\s*\n/g, '\n\n')
+      .trim();
   };
 
   const handleSend = async (e) => {
