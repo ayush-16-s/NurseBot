@@ -563,41 +563,45 @@ const BotList = () => {
 
   // Helper function to safely extract ID from both string and ObjectId formats
   const getBotId = (bot) => {
-    console.log('getBotId input:', bot);
+    console.log('🔍 getBotId input:', bot);
+    console.log('🔍 bot._id:', bot?._id);
+    console.log('🔍 typeof bot._id:', typeof bot?._id);
     
     if (!bot || !bot._id) {
-      console.error('Bot or bot._id is missing');
+      console.error('❌ Bot or bot._id is missing');
       return null;
     }
     
     // Handle different possible formats
     if (typeof bot._id === 'string') {
-      console.log('ID is string:', bot._id);
+      console.log('✅ ID is string:', bot._id);
       return bot._id;
     }
     
     if (typeof bot._id === 'object' && bot._id.$oid) {
-      console.log('ID is object with $oid:', bot._id.$oid);
+      console.log('✅ ID is object with $oid:', bot._id.$oid);
       return bot._id.$oid;
     }
     
     // Handle case where _id might be a plain object with oid property
     if (typeof bot._id === 'object' && bot._id.oid) {
-      console.log('ID is object with oid:', bot._id.oid);
+      console.log('✅ ID is object with oid:', bot._id.oid);
       return bot._id.oid;
     }
     
     // Additional fallback: try to access any property that looks like an ID
     if (typeof bot._id === 'object') {
+      console.log('🔍 Checking object properties:', Object.keys(bot._id));
       for (const key in bot._id) {
+        console.log(`🔍 Checking property ${key}:`, bot._id[key]);
         if (key.includes('oid')) {
-          console.log(`Found ID property ${key}:`, bot._id[key]);
+          console.log(`✅ Found ID property ${key}:`, bot._id[key]);
           return bot._id[key];
         }
       }
     }
     
-    console.error('Unknown ID format:', bot._id, typeof bot._id);
+    console.error('❌ Unknown ID format:', bot._id, typeof bot._id);
     return null;
   };
 
@@ -635,15 +639,21 @@ const BotList = () => {
     }
 
     if (data) {
+      console.log('🆕 Bot creation response:', data);
+      console.log('🆕 data.botId:', data.botId);
+      console.log('🆕 data.result:', data.result);
+      
       // Add new bot to the list locally instead of refetching all bots
       const newBot = {
-        _id: data.botId || { $oid: data.botId || "unknown" },
+        _id: data.botId || { $oid: data.botId || data.result?._id?.$oid || `temp_${Date.now()}` },
         bot_name,
         description: "",
         namespace_id: data.namespace_id || "",
         created_at: { $date: new Date().toISOString() },
         hasUploadedReport: false
       };
+      
+      console.log('🆕 New bot object:', newBot);
       setBots(prevBots => [newBot, ...prevBots]);
       toast.success(data.message || "Bot created successfully!");
     }
@@ -705,6 +715,13 @@ const BotList = () => {
     if (!namespace_id) {
       namespace_id = `ns_${id}_${Date.now()}`;
     }
+    
+    console.log('🚀 goToPage called with:');
+    console.log('  - URL:', url);
+    console.log('  - ID:', id);
+    console.log('  - Namespace ID:', namespace_id);
+    console.log('  - Final URL:', `${url}?id=${id}&namespace_id=${namespace_id}`);
+    
     navigate(`${url}?id=${id}&namespace_id=${namespace_id}`);
   };
 
