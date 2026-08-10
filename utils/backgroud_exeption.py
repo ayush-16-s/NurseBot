@@ -19,5 +19,5 @@ def handleExceptions(task_func):
                 'trace': trace
             }
             print(str(error_details))  # Replace this with a logging statement
-        return None  # Return None or appropriate default if an exception occurs
+            raise  # Re-raise the exception so it can be handled properly upstream
     return wrapper  # Return the wrapper function itself, NOT calling it recursively

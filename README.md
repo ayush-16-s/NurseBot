@@ -62,7 +62,7 @@ python3 --version
 
     ```
 
-### ** 8 MongoDB Setup
+### ** 8 MongoDB Setup 
 
     - Before running the server, refer to the provided video to set up MongoDB.
 
@@ -75,9 +75,8 @@ python3 --version
     ```
 
 ### ** 9 Run the FastAPI Server   
-
-    uvicorn app:app --reload --port 9000
-
+ uvicorn app:app --reload --port 9000
+  
 
 ### ** 10 Open in Browser
 

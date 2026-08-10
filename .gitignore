@@ -1,14 +1,14 @@
-# Python virtual environment
-venv/
-ENV/
-env/
-.venv/
+# Environment / secrets
+.env
+.env.*
+!.env.example
 
-# Python cache files
+# Python
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
 
-# Environment variables
-.env
+# Uploaded files / patient reports
+upload/
+
+# Test output
+*.log
